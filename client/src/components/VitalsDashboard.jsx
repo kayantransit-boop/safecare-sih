@@ -3,7 +3,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } f
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-const API = '/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f97316', '#e8b04b', '#14b8a6', '#ec4899'];
 
 function getRiskBadge(label) {

@@ -7,7 +7,7 @@
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev",
     "setup": "npm run install:all",
-    "build": "cd client && npm install && npm run build && cd ../server && npm install && npm run build",
+    "build": "npm install --prefix server && npm run build --prefix server",
     "start": "node server/dist/server.js"
   }
 }

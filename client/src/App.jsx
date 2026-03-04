@@ -4,7 +4,7 @@ import VitalsDashboard from './components/VitalsDashboard';
 import StaffDashboard from './components/StaffDashboard';
 import SejoursDashboard from './components/SejoursDashboard';
 
-const API = '/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 
 export default function App() {
   const [auth, setAuth] = useState(!!localStorage.getItem('safecare_auth'));
