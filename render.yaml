@@ -11,7 +11,7 @@ services:
     rootDir: server
     buildCommand: npm install && npm run build
     startCommand: npm start
-    plan: free
+    plan: starter
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -26,7 +26,6 @@ services:
     rootDir: client
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
-    plan: free
     envVars:
       - key: VITE_API_URL
         fromService:
