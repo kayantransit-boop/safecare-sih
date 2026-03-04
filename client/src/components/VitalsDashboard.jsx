@@ -146,7 +146,7 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.setTextColor(30, 58, 95);
-    doc.text('SafeCare — Rapport Patient', 14, 20);
+    doc.text('Kayan Clinique — Rapport Patient', 14, 20);
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Patient : ${selected.nom}`, 14, 32);
@@ -170,7 +170,7 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
         headStyles: { fillColor: [30, 58, 95] },
       });
     }
-    doc.save(`SafeCare_${selected.nom.replace(/\s/g, '_')}.pdf`);
+    doc.save(`KayanClinique_${selected.nom.replace(/\s/g, '_')}.pdf`);
     showToast('📄 PDF exporté');
   }
 
@@ -191,7 +191,7 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
         td { padding: 8px; border-bottom: 1px solid #e5e7eb; }
         .footer { margin-top: 60px; border-top: 1px solid #e5e7eb; padding-top: 20px; font-size: 12px; color: #9ca3af; }
       </style></head><body>
-      <h1>🏥 SafeCare — Fiche Patient</h1>
+      <h1>🏥 Kayan Clinique — Fiche Patient</h1>
       <div class="info">
         <div class="label">Nom complet</div><div class="value">${selected.nom}</div>
         <div class="label" style="margin-top:10px">Âge</div><div class="value">${selected.age} ans</div>
@@ -214,7 +214,7 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
             </tr>`).join('')}
         </table>
       </div>
-      <div class="footer">Généré le ${new Date().toLocaleString('fr-FR')} — SafeCare SIH</div>
+      <div class="footer">Généré le ${new Date().toLocaleString('fr-FR')} — Kayan Clinique SIH</div>
       </body></html>
     `);
     win.document.close();

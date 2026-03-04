@@ -37,7 +37,7 @@ export default function App() {
       <div className="header">
         <div className="header-logo">🏥</div>
         <div>
-          <div className="header-title">SafeCare</div>
+          <div className="header-title">Kayan Clinique</div>
           <div className="header-sub">Système d'Information Hospitalier</div>
         </div>
         <nav className="nav-tabs">

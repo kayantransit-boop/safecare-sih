@@ -31,7 +31,7 @@ export default function LoginPage({ onLogin }) {
       }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🏥</div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#1e3a5f', marginBottom: 4 }}>SafeCare</h1>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#1e3a5f', marginBottom: 4 }}>Kayan Clinique</h1>
           <p style={{ fontSize: 13, color: '#6b7280' }}>Système d'Information Hospitalier</p>
         </div>
 
