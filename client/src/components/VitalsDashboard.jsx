@@ -28,6 +28,7 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [patientSejours, setPatientSejours] = useState([]);
   const [vitals, setVitals] = useState([]);
   const [search, setSearch] = useState('');
   const [riskFilter, setRiskFilter] = useState('tous');
@@ -42,6 +43,11 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
   const [editPatient, setEditPatient] = useState(null);
   const [patientForm, setPatientForm] = useState(emptyPatient);
   const [toast, setToast] = useState(null);
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }
 
   useEffect(() => { fetchPatients(); }, []);
 
@@ -65,9 +71,34 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
     setVitals(data.vitals || []);
   }
 
+  async function fetchPatientSejours(patientId) {
+    const res = await fetch(`${API}/sejours`);
+    const data = await res.json();
+    const ps = (data.sejours || []).filter(s => s.patient_id === patientId);
+    setPatientSejours(ps);
+    // Auto-sélectionner le séjour actif s'il existe
+    const actif = ps.find(s => s.statut === 'actif');
+    if (actif) setVitalsForm(f => ({ ...f, sejour_id: String(actif.id) }));
+    else setVitalsForm(f => ({ ...f, sejour_id: '' }));
+  }
+
+  async function creerSejourRapide(patient) {
+    const res = await fetch(`${API}/sejours`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patient_id: patient.id, motif: 'Admission directe' }),
+    });
+    const data = await res.json();
+    showToast('✅ Séjour créé');
+    await fetchPatientSejours(patient.id);
+    setVitalsForm(f => ({ ...f, sejour_id: String(data.sejour.id) }));
+    setTab('form');
+  }
+
   function selectPatient(p) {
     setSelected(p);
     fetchVitals(p.id);
+    fetchPatientSejours(p.id);
     setTab('vitals');
   }
 
@@ -465,7 +496,26 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
               {/* Historique vitaux */}
               {tab === 'vitals' && (
                 vitals.length === 0
-                  ? <p className="empty">Aucun relevé enregistré</p>
+                  ? (
+                    <div style={{ textAlign: 'center', padding: '30px 20px' }}>
+                      <div style={{ fontSize: 36, marginBottom: 10 }}>📋</div>
+                      <div style={{ fontWeight: 600, color: '#374151', marginBottom: 6 }}>Aucun signe vital enregistré</div>
+                      <div style={{ fontSize: 12, color: '#9ca3af', marginBottom: 16 }}>
+                        {patientSejours.length === 0
+                          ? 'Ce patient n\'a pas encore de séjour. Créez-en un pour commencer.'
+                          : 'Cliquez sur "➕ Saisir" pour enregistrer les premiers signes vitaux.'}
+                      </div>
+                      {patientSejours.length === 0 ? (
+                        <button className="btn btn-primary" onClick={() => creerSejourRapide(selected)}>
+                          🛏️ Créer un séjour et saisir les vitaux
+                        </button>
+                      ) : (
+                        <button className="btn btn-primary" onClick={() => setTab('form')}>
+                          ➕ Saisir les signes vitaux
+                        </button>
+                      )}
+                    </div>
+                  )
                   : <div style={{ overflowX: 'auto' }}>
                     <table>
                       <thead>
@@ -501,12 +551,33 @@ export default function VitalsDashboard({ occupancy, alerts = [] }) {
               {tab === 'form' && (
                 <form onSubmit={submitVitals}>
                   <div className="form-box">
+                    {/* Séjour selector */}
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: '#374151', display: 'block', marginBottom: 6 }}>
+                        Séjour hospitalier *
+                      </label>
+                      {patientSejours.length === 0 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fefce8', border: '1px solid #fef08a', borderRadius: 8, padding: '10px 14px' }}>
+                          <span style={{ fontSize: 13, color: '#713f12' }}>Aucun séjour actif pour ce patient</span>
+                          <button type="button" className="btn btn-primary" style={{ fontSize: 12, padding: '5px 14px' }}
+                            onClick={() => creerSejourRapide(selected)}>
+                            + Créer un séjour
+                          </button>
+                        </div>
+                      ) : (
+                        <select required value={vitalsForm.sejour_id}
+                          onChange={e => setVitalsForm(f => ({ ...f, sejour_id: e.target.value }))}
+                          style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1.5px solid #e5e7eb', fontSize: 13 }}>
+                          <option value="">— Sélectionner un séjour —</option>
+                          {patientSejours.map(s => (
+                            <option key={s.id} value={s.id}>
+                              Séjour #{s.id} — {s.motif || 'Sans motif'} — {s.statut === 'actif' ? '🟢 Actif' : '⚪ Sorti'} — {new Date(s.admission_date).toLocaleDateString('fr-FR')}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                     <div className="form-row">
-                      <div className="form-group">
-                        <label>N° Séjour *</label>
-                        <input type="number" required placeholder="ID séjour" value={vitalsForm.sejour_id}
-                          onChange={e => setVitalsForm(f => ({ ...f, sejour_id: e.target.value }))} />
-                      </div>
                       <div className="form-group">
                         <label>Température (°C)</label>
                         <input type="number" step="0.1" placeholder="37.0" value={vitalsForm.temperature}
