@@ -9,11 +9,11 @@ import LaboratoireDashboard from './components/LaboratoireDashboard';
 const API = import.meta.env.VITE_API_URL || '/api';
 
 const MENU = [
-  { key: 'patients',    label: 'Patients',     icon: '👥', desc: 'Dossiers & Signes vitaux' },
-  { key: 'sejours',     label: 'Séjours',      icon: '🛏️', desc: 'Admissions & Sorties' },
-  { key: 'labo',        label: 'Laboratoire',  icon: '🔬', desc: 'Analyses & Résultats' },
-  { key: 'facturation', label: 'Facturation',  icon: '🧾', desc: 'Factures & Paiements' },
-  { key: 'staff',       label: 'Personnel',    icon: '👨‍⚕️', desc: 'Équipe médicale' },
+  { key: 'patients',    label: 'Patients',    icon: '👥', desc: 'Dossiers & Signes vitaux' },
+  { key: 'sejours',     label: 'Séjours',     icon: '🛏️', desc: 'Admissions & Sorties' },
+  { key: 'labo',        label: 'Labo',        icon: '🔬', desc: 'Analyses & Résultats' },
+  { key: 'facturation', label: 'Facturation', icon: '🧾', desc: 'Factures & Paiements' },
+  { key: 'staff',       label: 'Personnel',   icon: '👨‍⚕️', desc: 'Équipe médicale' },
 ];
 
 function Clock() {
@@ -37,6 +37,7 @@ export default function App() {
   const [page, setPage] = useState('patients');
   const [alerts, setAlerts] = useState([]);
   const [occupancy, setOccupancy] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!auth) return;
@@ -54,15 +55,27 @@ export default function App() {
     setAuth(false);
   }
 
+  function navigate(key) {
+    setPage(key);
+    setSidebarOpen(false);
+  }
+
   if (!auth) return <LoginPage onLogin={() => setAuth(true)} />;
 
   const occPct = occupancy ? Math.round((occupancy.occupied / occupancy.total) * 100) : 0;
   const occColor = occPct >= 90 ? '#ef4444' : occPct >= 70 ? '#f59e0b' : '#10b981';
+  const current = MENU.find(m => m.key === page);
 
   return (
     <div className="app-layout">
+
+      {/* ── OVERLAY mobile (ferme sidebar) ── */}
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* ── SIDEBAR ── */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${sidebarOpen ? 'sidebar-open' : ''}`}>
         {/* Logo */}
         <div className="sidebar-logo">
           <div style={{ fontSize: 32, marginBottom: 6 }}>🏥</div>
@@ -70,7 +83,6 @@ export default function App() {
           <div style={{ fontSize: 10, opacity: 0.5, marginTop: 2 }}>Système d'Information Hospitalier</div>
         </div>
 
-        {/* Horloge */}
         <Clock />
 
         {/* Navigation */}
@@ -79,7 +91,7 @@ export default function App() {
             <button
               key={m.key}
               className={`sidebar-nav-item ${page === m.key ? 'active' : ''}`}
-              onClick={() => setPage(m.key)}
+              onClick={() => navigate(m.key)}
             >
               <span className="sidebar-nav-icon">{m.icon}</span>
               <div>
@@ -127,30 +139,33 @@ export default function App() {
       <div className="content-area">
         {/* Top bar */}
         <div className="topbar">
+          {/* Hamburger (mobile only) */}
+          <button className="hamburger" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            ☰
+          </button>
+
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#1e3a5f' }}>
-              {MENU.find(m => m.key === page)?.icon} {MENU.find(m => m.key === page)?.label}
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#1e3a5f' }}>
+              {current?.icon} {current?.label}
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>
-              {MENU.find(m => m.key === page)?.desc}
-            </div>
+            <div className="topbar-desc">{current?.desc}</div>
           </div>
 
           {alerts.length > 0 && (
             <div className="alert-topbar">
               <div className="alert-banner-dot" />
-              <strong>{alerts.length} alerte{alerts.length > 1 ? 's' : ''} critique{alerts.length > 1 ? 's' : ''}</strong>
-              {alerts.slice(0, 2).map((a, i) => (
-                <span key={i} style={{ fontSize: 12 }}>
-                  — {a.nom} <span style={{ fontWeight: 700, color: '#fca5a5' }}>NEWS2:{a.news2_score}</span>
-                </span>
-              ))}
+              <span><strong>{alerts.length}</strong> alerte{alerts.length > 1 ? 's' : ''}</span>
+              <span className="alert-topbar-detail">
+                {alerts.slice(0, 1).map((a, i) => (
+                  <span key={i}>— {a.nom} <strong style={{ color: '#fca5a5' }}>NEWS2:{a.news2_score}</strong></span>
+                ))}
+              </span>
             </div>
           )}
         </div>
 
         {/* Page content */}
-        <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div className="page-content">
           {page === 'patients'    && <VitalsDashboard occupancy={occupancy} alerts={alerts} />}
           {page === 'sejours'     && <SejoursDashboard />}
           {page === 'labo'        && <LaboratoireDashboard />}
@@ -158,6 +173,23 @@ export default function App() {
           {page === 'staff'       && <StaffDashboard />}
         </div>
       </div>
+
+      {/* ── NAVIGATION BAS (mobile only) ── */}
+      <nav className="bottom-nav">
+        {MENU.map(m => (
+          <button
+            key={m.key}
+            className={`bottom-nav-item ${page === m.key ? 'active' : ''}`}
+            onClick={() => navigate(m.key)}
+          >
+            <span className="bottom-nav-icon">{m.icon}</span>
+            <span className="bottom-nav-label">{m.label}</span>
+            {m.key === 'labo' && alerts.length > 0 && (
+              <span className="bottom-nav-badge">{alerts.length}</span>
+            )}
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

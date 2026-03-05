@@ -140,7 +140,7 @@ export default function SejoursDashboard() {
 
           {loading && <p className="empty">Chargement...</p>}
           {!loading && (
-            <table>
+            <div className="table-wrap"><table>
               <thead>
                 <tr>
                   <th>Patient</th>
@@ -197,7 +197,7 @@ export default function SejoursDashboard() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>

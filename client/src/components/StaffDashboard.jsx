@@ -144,7 +144,7 @@ export default function StaffDashboard() {
           {loading && <p className="empty">Chargement...</p>}
 
           {!loading && (
-            <table>
+            <div className="table-wrap"><table>
               <thead>
                 <tr>
                   <th>Nom</th>
@@ -187,7 +187,7 @@ export default function StaffDashboard() {
                   );
                 })}
               </tbody>
-            </table>
+            </table></div>
           )}
         </div>
       </div>
